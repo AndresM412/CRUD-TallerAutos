@@ -1,6 +1,6 @@
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-require("dotenv").config();
 
 // Importar rutas
 const clienteRoutes = require("./routes/clienteRoutes");
@@ -11,10 +11,7 @@ const app = express();
 app.use(express.json());
 
 // Conectar a MongoDB Atlas
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("Conectado a MongoDB Atlas"))
 .catch((err) => console.error("Error de conexión a MongoDB:", err));
 
