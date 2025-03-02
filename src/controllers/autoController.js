@@ -4,7 +4,7 @@ exports.createAuto = async (req, res) => {
     try {
         const auto = new Auto(req.body);
         await auto.save();
-        res.status(201).send(cliente);
+        res.status(201).send(auto);
     } catch (err) {
         res.status(400).send(err);
     }
