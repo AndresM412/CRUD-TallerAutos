@@ -1,0 +1,47 @@
+name: Pipeline de Producción
+
+on:
+  push:
+    branches:
+      - main  # Se ejecuta cuando hay un push a la rama main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # Usa una máquina virtual con Ubuntu
+
+    steps:
+      # Paso 1: Obtener el código del repositorio
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Paso 2: Configurar Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'  # Usa Node.js 16
+
+      # Paso 3: Instalar dependencias
+      - name: Install dependencies
+        run: npm install
+
+      # Paso 4: Ejecutar pruebas
+      - name: Run tests
+        run: npm test
+
+      # Paso 5: Verificar cobertura de pruebas
+      - name: Check coverage
+        run: |
+          npm run test:coverage
+          if [ $(grep -oP '(?<=All files\s+\|\s+)\d+' coverage/lcov-report/index.html) -lt 85 ]; then
+            echo "Cobertura insuficiente (menos del 85%)"
+            exit 1
+          fi
+
+      # Paso 6: Desplegar la aplicación en Vercel
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          echo "Desplegando a producción en Vercel..."
+          npm install -g vercel
+          vercel --token $VERCEL_TOKEN --prod
