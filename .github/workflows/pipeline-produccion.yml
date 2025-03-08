@@ -27,14 +27,16 @@ jobs:
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}  # Accede al secret MONGODB_URI
         run: |
-          docker run --env MONGO_URI=$MONGO_URI nombre-de-tu-app npm test
+          docker run --rm --env MONGO_URI=$MONGO_URI nombre-de-tu-app npm test -- --coverage
 
       # Paso 5: Verificar cobertura de pruebas
       - name: Check coverage
         run: |
-          # Copiar el archivo de cobertura generado en el contenedor al host
+          # Crear un contenedor temporal para copiar el archivo de cobertura
           docker create --name test-container nombre-de-tu-app
+          # Copiar el archivo de cobertura desde el contenedor al host
           docker cp test-container:/app/coverage ./coverage
+          # Eliminar el contenedor temporal
           docker rm test-container
 
           # Verificar la cobertura

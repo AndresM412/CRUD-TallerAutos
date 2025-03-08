@@ -20,21 +20,23 @@ jobs:
 
       # Paso 3: Construir la imagen de Docker
       - name: Build Docker image
-        run: docker build -t nombre-de-tu-app .
+        run: docker build -t taller-autos .
 
       # Paso 4: Ejecutar pruebas dentro del contenedor
       - name: Run tests in Docker
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}  # Usa la URI de MongoDB Atlas
         run: |
-          docker run --env MONGO_URI=$MONGO_URI nombre-de-tu-app npm test
+          docker run --rm --env MONGO_URI=$MONGO_URI taller-autos npm test -- --coverage
 
       # Paso 5: Verificar cobertura de pruebas
       - name: Check coverage
         run: |
-          # Copiar el archivo de cobertura generado en el contenedor al host
-          docker create --name test-container nombre-de-tu-app
+          # Crear un contenedor temporal para copiar el archivo de cobertura
+          docker create --name test-container taller-autos
+          # Copiar el archivo de cobertura desde el contenedor al host
           docker cp test-container:/app/coverage ./coverage
+          # Eliminar el contenedor temporal
           docker rm test-container
 
           # Verificar la cobertura
