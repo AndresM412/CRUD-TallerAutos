@@ -20,9 +20,21 @@
     "nyc": "^17.1.0",
     "supertest": "^7.0.0"
   },
+  "jest": {
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov"],
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/server.js",
+      "!tests/**/*.js"   
+    ]
+  },
   "nyc": {
     "reporter": ["text", "lcov"],
     "include": ["src/**/*.js"],
-    "exclude": ["src/server.js"]
+    "exclude": ["src/server.js", "tests/**/*.js"],
+    "all": true
   }
 }
