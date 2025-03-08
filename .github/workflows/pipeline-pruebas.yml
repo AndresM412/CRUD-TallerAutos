@@ -14,24 +14,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Paso 2: Configurar Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'  # Usa Node.js 16
+      # Paso 2: Configurar Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-      # Paso 3: Instalar dependencias
-      - name: Install dependencies
-        run: npm install
+      # Paso 3: Construir la imagen de Docker
+      - name: Build Docker image
+        run: docker build -t nombre-de-tu-app .
 
-      # Paso 4: Ejecutar pruebas
-      - name: Run tests
-        run: npm test
+      # Paso 4: Ejecutar pruebas dentro del contenedor
+      - name: Run tests in Docker
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}  # Usa la URI de MongoDB Atlas
+        run: |
+          docker run --env MONGODB_URI=$MONGODB_URI nombre-de-tu-app npm test
 
       # Paso 5: Verificar cobertura de pruebas
       - name: Check coverage
         run: |
-          npm run test:coverage
+          # Copiar el archivo de cobertura generado en el contenedor al host
+          docker create --name test-container nombre-de-tu-app
+          docker cp test-container:/app/coverage ./coverage
+          docker rm test-container
+
+          # Verificar la cobertura
           if [ $(grep -oP '(?<=All files\s+\|\s+)\d+' coverage/lcov-report/index.html) -lt 60 ]; then
             echo "Cobertura insuficiente (menos del 60%)"
             exit 1
