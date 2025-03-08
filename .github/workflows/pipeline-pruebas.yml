@@ -25,9 +25,9 @@ jobs:
       # Paso 4: Ejecutar pruebas dentro del contenedor
       - name: Run tests in Docker
         env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}  # Usa la URI de MongoDB Atlas
+          MONGO_URI: ${{ secrets.MONGO_URI }}  # Usa la URI de MongoDB Atlas
         run: |
-          docker run --env MONGODB_URI=$MONGODB_URI nombre-de-tu-app npm test
+          docker run --env MONGO_URI=$MONGO_URI nombre-de-tu-app npm test
 
       # Paso 5: Verificar cobertura de pruebas
       - name: Check coverage
