@@ -23,17 +23,9 @@
     "supertest": "^7.0.0"
   },
   "nyc": {
-    "reporter": [
-      "text",
-      "lcov"
-    ],
-    "include": [
-      "src/**/*.js"
-    ],
-    "exclude": [
-      "src/server.js",
-      "tests/**/*.js"
-    ],
+    "reporter": ["text", "lcov"],
+    "include": ["src/**/*.js"],
+    "exclude": ["src/server.js", "tests/**/*.js"],
     "all": true,
     "temp-dir": "coverage"
   }
