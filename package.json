@@ -34,6 +34,7 @@
       "src/server.js",
       "tests/**/*.js"
     ],
-    "all": true
+    "all": true,
+    "temp-dir": "coverage"
   }
 }

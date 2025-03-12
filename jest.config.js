@@ -1,7 +1,7 @@
 module.exports = {
   testTimeout: 10000,
   collectCoverage: true,
-  coverageDirectory: "coverage",
+  coverageDirectory: ".nyc_output", // Cambia esto a .nyc_output
   coverageReporters: ["text", "lcov"],
   testEnvironment: "node",
   collectCoverageFrom: [
