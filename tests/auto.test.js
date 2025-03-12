@@ -48,4 +48,47 @@ describe("Auto Controller", () => {
         const res = await request(app).get("/autos/invalid-id");
         expect(res.statusCode).toEqual(404);
     });
+
+    it("debería manejar errores al crear un auto", async () => {
+        // Simula un error de validación enviando un objeto vacío
+        const res = await request(app)
+            .post("/autos")
+            .send({}); // Envía un objeto vacío para forzar un error
+        expect(res.statusCode).toEqual(400); // Espera un código de estado 400 (Bad Request)
+    });
+
+    it("debería manejar errores al obtener autos", async () => {
+        // Simula un error en la base de datos
+        jest.spyOn(Auto, "find").mockRejectedValueOnce(new Error("Error de base de datos"));
+    
+        const res = await request(app).get("/autos");
+        expect(res.statusCode).toEqual(500); // Espera un código de estado 500 (Internal Server Error)
+    });
+
+    it("debería manejar errores al actualizar un auto", async () => {
+        const res = await request(app)
+            .put("/autos/invalid-id") // Usa un ID inválido
+            .send({ marca: "Honda" });
+        expect(res.statusCode).toEqual(400); // Espera un código de estado 400 (Bad Request)
+    });
+
+    it("debería manejar errores al eliminar un auto", async () => {
+        const res = await request(app).delete("/autos/invalid-id"); // Usa un ID inválido
+        expect(res.statusCode).toEqual(400); // Espera un código de estado 400 (Bad Request)
+    });
+
+    it("debería manejar errores al eliminar un auto que no existe", async () => {
+        const auto = await Auto.create({ marca: "Toyota" });
+        await Auto.findByIdAndDelete(auto._id); // Elimina el auto primero
+        const res = await request(app).delete(`/autos/${auto._id}`);
+        expect(res.statusCode).toEqual(404); // Espera un código de estado 404 (Not Found)
+    });
+
+    it("debería manejar errores al actualizar un auto con datos inválidos", async () => {
+        const auto = await Auto.create({ marca: "Toyota" });
+        const res = await request(app)
+            .put(`/autos/${auto._id}`)
+            .send({ marca: "" }); // Envía un campo vacío para forzar un error de validación
+        expect(res.statusCode).toEqual(400); // Espera un código de estado 400 (Bad Request)
+    });
 });
