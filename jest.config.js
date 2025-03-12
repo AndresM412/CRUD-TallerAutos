@@ -13,6 +13,6 @@ module.exports = {
     "^.+\\.js$": "babel-jest" // Usa Babel para transformar archivos .js
   },
   transformIgnorePatterns: [
-    "/node_modules/(?!(bson)).+\\.js$" // Ignora todos los archivos en node_modules, excepto los de bson
+    "/node_modules/(?!bson).+\\.js$"
   ]
 };
