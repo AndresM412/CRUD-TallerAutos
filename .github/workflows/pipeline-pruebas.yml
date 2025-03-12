@@ -14,33 +14,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Paso 2: Configurar Docker Buildx
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+      # Paso 2: Configurar Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'  # Usa la versión de Node.js que necesites
 
-      # Paso 3: Construir la imagen de Docker
-      - name: Build Docker image
-        run: docker build -t taller-autos .
+      # Paso 3: Instalar dependencias
+      - name: Install dependencies
+        run: npm install
 
-      # Paso 4: Ejecutar pruebas dentro del contenedor
-      - name: Run tests in Docker
+      # Paso 4: Ejecutar pruebas y generar reporte de cobertura
+      - name: Run tests
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}  # Usa la URI de MongoDB Atlas
-        run: |
-          docker run --rm --env MONGO_URI=$MONGO_URI taller-autos npm test -- --coverage
+        run: npm test -- --coverage
 
       # Paso 5: Verificar cobertura de pruebas
       - name: Check coverage
         run: |
-          # Crear un contenedor temporal para copiar el archivo de cobertura
-          docker create --name test-container taller-autos
-          # Copiar el archivo de cobertura desde el contenedor al host
-          docker cp test-container:/app/coverage ./coverage
-          # Eliminar el contenedor temporal
-          docker rm test-container
-
-          # Verificar la cobertura
-          if [ $(grep -oP '(?<=All files\s+\|\s+)\d+' coverage/lcov-report/index.html) -lt 60 ]; then
+          npx nyc report --reporter=text
+          if [ $(npx nyc report --reporter=text | grep -oP '(?<=All files\s+\|\s+)\d+') -lt 60 ]; then
             echo "Cobertura insuficiente (menos del 60%)"
             exit 1
           fi
