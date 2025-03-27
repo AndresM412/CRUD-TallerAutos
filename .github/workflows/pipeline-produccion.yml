@@ -3,34 +3,29 @@ name: Pipeline de Producción
 on:
   push:
     branches:
-      - main  # Se ejecuta cuando hay un push a la rama main
+      - main
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # Usa una máquina virtual con Ubuntu
+    runs-on: ubuntu-latest
 
     steps:
-      # Paso 1: Obtener el código del repositorio
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Paso 2: Configurar Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'  # Usa la versión de Node.js que necesites
+          node-version: '16'
 
-      # Paso 3: Instalar dependencias
       - name: Install dependencies
         run: npm install
 
-      # Paso 4: Ejecutar pruebas y generar reporte de cobertura
-      - name: Run tests
+      - name: Run tests with coverage
         env:
-          MONGO_URI: ${{ secrets.MONGO_URI }}  # Accede al secret MONGODB_URI
+          MONGO_URI: ${{ secrets.MONGO_URI }}
         run: npm test -- --coverage
 
-      # Paso 5: Verificar cobertura de pruebas
       - name: Check coverage
         run: |
           npx nyc report --reporter=text
@@ -39,11 +34,9 @@ jobs:
             exit 1
           fi
 
-      # Paso 6: Construir la imagen de Docker
       - name: Build Docker image
         run: docker build -t taller-autos .
 
-      # Paso 7: Desplegar la aplicación en Vercel
       - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

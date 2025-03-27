@@ -1,6 +1,5 @@
 const express = require("express");
 const facturaController = require("../controllers/facturaController");
-
 const router = express.Router();
 
 router.post("/", facturaController.createFactura);
