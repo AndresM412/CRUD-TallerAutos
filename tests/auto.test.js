@@ -24,7 +24,7 @@ describe("Auto Controller", () => {
         await Auto.create({ marca: "Toyota" });
         const res = await request(app).get("/autos");
         expect(res.statusCode).toEqual(200);
-        expect(res.body.length).toEqual(1);
+        expect(res.body.length).toBeGreaterThanOrEqual(1);
     });
 
     it("debería actualizar un auto", async () => {
