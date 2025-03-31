@@ -1,0 +1,1 @@
+const fs = require('fs'); const coveragePath = './coverage/coverage-final.json'; if (!fs.existsSync(coveragePath)) { console.error('❌ Error: No se generó el reporte de cobertura'); process.exit(1); } else { console.log('✅ Reporte generado correctamente'); }
