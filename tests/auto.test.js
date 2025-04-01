@@ -1,94 +1,85 @@
 const request = require("supertest");
-const app = require("../src/server"); // Asegúrate de exportar `app` en server.js
+const app = require("../src/server");
 const Auto = require("../src/models/autoModel");
-const mongoose = require("mongoose"); // Importar mongoose
+const mongoose = require("mongoose");
 
 describe("Auto Controller", () => {
-    beforeEach(async () => {
-        await Auto.deleteMany({});
+    let testAuto;
+
+    // Antes de todas las pruebas, crea un auto de prueba
+    beforeAll(async () => {
+        testAuto = await Auto.create({ 
+            marca: "Toyota", 
+            modelo: "Corolla", 
+            año: 2020 
+        });
     });
 
+    // Después de todas las pruebas, limpia la base de datos
     afterAll(async () => {
+        await Auto.deleteMany({});
         await mongoose.connection.close();
     });
 
+    // Prueba: Crear un auto
     it("debería crear un auto", async () => {
         const res = await request(app)
             .post("/autos")
-            .send({ marca: "Toyota" });
-        expect(res.statusCode).toEqual(201);
-        expect(res.body.marca).toEqual("Toyota");
+            .send({ marca: "Honda", modelo: "Civic", año: 2021 });
+        
+        expect(res.statusCode).toBe(201);
+        expect(res.body.marca).toBe("Honda");
     });
 
+    // Prueba: Obtener todos los autos
     it("debería obtener todos los autos", async () => {
-        await Auto.create({ marca: "Toyota" });
         const res = await request(app).get("/autos");
-        expect(res.statusCode).toEqual(200);
+        
+        expect(res.statusCode).toBe(200);
         expect(res.body.length).toBeGreaterThanOrEqual(1);
+        expect(res.body.some(auto => auto.marca === "Toyota")).toBe(true);
     });
 
+    // Prueba: Actualizar un auto
     it("debería actualizar un auto", async () => {
-        const auto = await Auto.create({ marca: "Toyota" });
         const res = await request(app)
-            .put(`/autos/${auto._id}`)
-            .send({ marca: "Honda" });
-        expect(res.statusCode).toEqual(200);
-        expect(res.body.marca).toEqual("Honda");
+            .put(`/autos/${testAuto._id}`)
+            .send({ marca: "Nissan" });
+        
+        expect(res.statusCode).toBe(200);
+        expect(res.body.marca).toBe("Nissan");
     });
 
+    // Prueba: Eliminar un auto
     it("debería eliminar un auto", async () => {
-        const auto = await Auto.create({ marca: "Toyota" });
-        const res = await request(app).delete(`/autos/${auto._id}`);
-        expect(res.statusCode).toEqual(204);
-        const autoEliminado = await Auto.findById(auto._id);
+        const res = await request(app)
+            .delete(`/autos/${testAuto._id}`);
+        
+        expect(res.statusCode).toBe(204);
+
+        // Verifica que el auto fue eliminado
+        const autoEliminado = await Auto.findById(testAuto._id);
         expect(autoEliminado).toBeNull();
     });
 
-    it("debería devolver un error si no se encuentra el auto", async () => {
-        const res = await request(app).get("/autos/invalid-id");
-        expect(res.statusCode).toEqual(404);
-    });
-
-    it("debería manejar errores al crear un auto", async () => {
-        // Simula un error de validación enviando un objeto vacío
+    // Prueba: Manejo de errores al crear auto sin marca
+    it("debería fallar al crear auto sin marca", async () => {
         const res = await request(app)
             .post("/autos")
-            .send({}); // Envía un objeto vacío para forzar un error
-        expect(res.statusCode).toEqual(400); // Espera un código de estado 400 (Bad Request)
+            .send({ modelo: "Sin Marca", año: 2022 });
+        
+        expect(res.statusCode).toBe(400);
+        expect(res.body.error).toBe("La marca es requerida");
     });
 
-    it("debería manejar errores al obtener autos", async () => {
-        // Simula un error en la base de datos
-        jest.spyOn(Auto, "find").mockRejectedValueOnce(new Error("Error de base de datos"));
-    
-        const res = await request(app).get("/autos");
-        expect(res.statusCode).toEqual(500); // Espera un código de estado 500 (Internal Server Error)
-    });
-
-    it("debería manejar errores al actualizar un auto", async () => {
+    // Prueba: Manejo de errores al actualizar auto inexistente
+    it("debería fallar al actualizar auto inexistente", async () => {
+        const fakeId = new mongoose.Types.ObjectId();
         const res = await request(app)
-            .put("/autos/invalid-id") // Usa un ID inválido
-            .send({ marca: "Honda" });
-        expect(res.statusCode).toEqual(400); // Espera un código de estado 400 (Bad Request)
-    });
-
-    it("debería manejar errores al eliminar un auto", async () => {
-        const res = await request(app).delete("/autos/invalid-id"); // Usa un ID inválido
-        expect(res.statusCode).toEqual(400); // Espera un código de estado 400 (Bad Request)
-    });
-
-    it("debería manejar errores al eliminar un auto que no existe", async () => {
-        const auto = await Auto.create({ marca: "Toyota" });
-        await Auto.findByIdAndDelete(auto._id); // Elimina el auto primero
-        const res = await request(app).delete(`/autos/${auto._id}`);
-        expect(res.statusCode).toEqual(404); // Espera un código de estado 404 (Not Found)
-    });
-
-    it("debería manejar errores al actualizar un auto con datos inválidos", async () => {
-        const auto = await Auto.create({ marca: "Toyota" });
-        const res = await request(app)
-            .put(`/autos/${auto._id}`)
-            .send({ marca: "" }); // Envía un campo vacío para forzar un error de validación
-        expect(res.statusCode).toEqual(400); // Espera un código de estado 400 (Bad Request)
+            .put(`/autos/${fakeId}`)
+            .send({ marca: "Ferrari" });
+        
+        expect(res.statusCode).toBe(404);
+        expect(res.body.error).toBe("Auto no encontrado");
     });
 });

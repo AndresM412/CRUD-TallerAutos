@@ -1,48 +1,85 @@
 const Auto = require("../models/autoModel");
 
+// Crear un auto
 exports.createAuto = async (req, res) => {
     try {
-        const auto = new Auto(req.body);
+        const { marca, modelo, año } = req.body;
+
+        // Validación básica
+        if (!marca || marca.trim() === "") {
+            return res.status(400).json({ error: "La marca es requerida" });
+        }
+
+        const auto = new Auto({ marca, modelo, año });
         await auto.save();
-        res.status(201).send(auto);
+        
+        res.status(201).json(auto);
     } catch (err) {
-        res.status(400).send(err);
+        res.status(400).json({ 
+            error: "Error al crear auto",
+            details: err.message 
+        });
     }
 };
 
-exports.getAuto = async (req, res) => {
+// Obtener todos los autos
+exports.getAllAutos = async (req, res) => {
     try {
         const autos = await Auto.find();
-        res.status(200).send(autos);
+        res.status(200).json(autos);
     } catch (err) {
-        res.status(500).send(err);
+        res.status(500).json({ 
+            error: "Error al obtener autos",
+            details: err.message 
+        });
     }
 };
 
+// Actualizar un auto
 exports.updateAuto = async (req, res) => {
     try {
-        const { marca } = req.body;
+        const { id } = req.params;
+        const { marca, modelo, año } = req.body;
+
+        // Validación
         if (!marca || marca.trim() === "") {
-            return res.status(400).send({ error: "La marca es requerida" });
+            return res.status(400).json({ error: "La marca es requerida" });
         }
-        const auto = await Auto.findByIdAndUpdate(req.params.id, req.body, { new: true });
+
+        const auto = await Auto.findByIdAndUpdate(
+            id,
+            { marca, modelo, año },
+            { new: true, runValidators: true }
+        );
+
         if (!auto) {
-            return res.status(404).send({ error: "Auto no encontrado" });
+            return res.status(404).json({ error: "Auto no encontrado" });
         }
-        res.status(200).send(auto);
+
+        res.status(200).json(auto);
     } catch (err) {
-        res.status(400).send(err);
+        res.status(400).json({ 
+            error: "Error al actualizar auto",
+            details: err.message 
+        });
     }
 };
 
+// Eliminar un auto
 exports.deleteAuto = async (req, res) => {
     try {
-        const auto = await Auto.findByIdAndDelete(req.params.id);
+        const { id } = req.params;
+        const auto = await Auto.findByIdAndDelete(id);
+
         if (!auto) {
-            return res.status(404).send({ error: "Auto no encontrado" }); // Cambia 400 por 404
+            return res.status(404).json({ error: "Auto no encontrado" });
         }
+
         res.status(204).send();
     } catch (err) {
-        res.status(400).send(err);
+        res.status(400).json({ 
+            error: "Error al eliminar auto",
+            details: err.message 
+        });
     }
 };
