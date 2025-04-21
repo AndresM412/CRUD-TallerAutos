@@ -11,12 +11,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
 
       - name: Install dependencies
         run: npm install
@@ -42,5 +42,5 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           echo "Desplegando a producción en Vercel..."
-          npm install -g vercel
-          vercel --token $VERCEL_TOKEN --prod
+          npm install -g vercel@latest
+          vercel --prod --token $VERCEL_TOKEN --yes
