@@ -6,9 +6,13 @@ const mongoose = require("mongoose");
 const clienteRoutes = require("./routes/clienteRoutes");
 const autoRoutes = require("./routes/autoRoutes");
 const facturaRoutes = require("./routes/facturaRoutes");
+const paso1Routes = require("./v2/routes/paso1Routes");
 
 const app = express();
 app.use(express.json());
+
+const { startListening } = require('./messageQueue/listener');
+startListening();
 
 const connectToDatabase = async () => {
   const dbOptions = {
@@ -44,6 +48,7 @@ connectToDatabase();
 app.use("/clientes", clienteRoutes);
 app.use("/autos", autoRoutes);
 app.use("/facturas", facturaRoutes);
+app.use("/api/v2/paso1", paso1Routes);
 
 // Exportar la aplicación para usarla en las pruebas
 module.exports = app;
