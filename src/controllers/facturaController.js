@@ -1,48 +1,63 @@
-const Factura = require("../models/facturaModel");
+const FacturaModel = require('../models/facturaModel');
 
-exports.createFactura = async (req, res) => {
+const facturaController = {
+  async crearFactura(req, res) {
     try {
-        const factura = new Factura(req.body);
-        await factura.save();
-        res.status(201).send(factura);
-    } catch (err) {
-        res.status(400).send(err);
+      const { id, ...datos } = req.body;
+      const nuevaFactura = await FacturaModel.crearFactura(req.firestore,id, datos);
+      res.status(201).json(nuevaFactura);
+    } catch (error) {
+      console.error('❌ Error al crear factura:', error);
+      res.status(500).json({ error: 'Error al crear factura' });
     }
+  },
+
+  async obtenerFactura(req, res) {
+    try {
+      const { id } = req.params;
+      const factura = await FacturaModel.obtenerFactura(id);
+      if (!factura) {
+        return res.status(404).json({ error: 'Factura no encontrada' });
+      }
+      res.json(factura);
+    } catch (error) {
+      console.error('❌ Error al obtener factura:', error);
+      res.status(500).json({ error: 'Error al obtener factura' });
+    }
+  },
+
+  async obtenerTodasLasFacturas(req, res) {
+    try {
+      const facturas = await FacturaModel.obtenerTodasLasFacturas();
+      res.json(facturas);
+    } catch (error) {
+      console.error('❌ Error al obtener facturas:', error);
+      res.status(500).json({ error: 'Error al obtener facturas' });
+    }
+  },
+
+  async actualizarFactura(req, res) {
+    try {
+      const { id } = req.params;
+      const datos = req.body;
+      const facturaActualizada = await FacturaModel.actualizarFactura(id, datos);
+      res.json(facturaActualizada);
+    } catch (error) {
+      console.error('❌ Error al actualizar factura:', error);
+      res.status(500).json({ error: 'Error al actualizar factura' });
+    }
+  },
+
+  async eliminarFactura(req, res) {
+    try {
+      const { id } = req.params;
+      await FacturaModel.eliminarFactura(id);
+      res.json({ mensaje: 'Factura eliminada exitosamente' });
+    } catch (error) {
+      console.error('❌ Error al eliminar factura:', error);
+      res.status(500).json({ error: 'Error al eliminar factura' });
+    }
+  }
 };
 
-exports.getFactura = async (req, res) => {
-    try {
-        const facturas = await Factura.find();
-        res.status(200).send(facturas);
-    } catch (err) {
-        res.status(500).send(err);
-    }
-};
-
-exports.updateFactura = async (req, res) => {
-    try {
-        const { monto } = req.body;
-        if (!monto || monto < 0) {
-            return res.status(400).send({ error: "El monto debe ser un valor positivo" });
-        }
-        const factura = await Factura.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!factura) {
-            return res.status(404).send({ error: "Factura no encontrada" });
-        }
-        res.status(200).send(factura);
-    } catch (err) {
-        res.status(400).send(err);
-    }
-};
-
-exports.deleteFactura = async (req, res) => {
-    try {
-        const factura = await Factura.findByIdAndDelete(req.params.id);
-        if (!factura) {
-            return res.status(404).send({ error: "Factura no encontrada" }); // Cambia 400 por 404
-        }
-        res.status(204).send();
-    } catch (err) {
-        res.status(400).send(err);
-    }
-};
+module.exports = facturaController;

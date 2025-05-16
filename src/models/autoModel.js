@@ -1,18 +1,33 @@
-const mongoose = require("mongoose");
+const collection = 'Auto';
 
-const autoSchema = new mongoose.Schema({
-    marca: { 
-        type: String, 
-        required: true 
-    },
-    modelo: {
-        type: String,
-        required: true
-    },
-    año: {
-        type: Number,
-        required: true
-    }
-});
+const AutoModel = {
+  async crearAuto(firestore, id, data) {
+    const docRef = firestore.collection(collection).doc(id);
+    await docRef.set(data);
+    return { id, ...data };
+  },
 
-module.exports = mongoose.model("Auto", autoSchema);
+  async obtenerAuto(firestore, id) {
+    const doc = await firestore.collection(collection).doc(id).get();
+    if (!doc.exists) return null;
+    return { id: doc.id, ...doc.data() };
+  },
+
+  async obtenerTodosLosAutos(firestore) {
+    const snapshot = await firestore.collection(collection).get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  },
+
+  async actualizarAuto(firestore, id, data) {
+    const docRef = firestore.collection(collection).doc(id);
+    await docRef.update(data);
+    return { id, ...data };
+  },
+
+  async eliminarAuto(firestore, id) {
+    await firestore.collection(collection).doc(id).delete();
+    return { success: true };
+  }
+};
+
+module.exports = AutoModel;
