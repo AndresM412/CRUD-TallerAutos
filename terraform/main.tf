@@ -46,8 +46,8 @@ resource "google_project_service" "firestore" {
 # Crear la base de datos Firestore
 resource "google_firestore_database" "default" {
   project     = var.gcp_project_id
-  name        = "(default)"
-  location_id = "nam5" # o usa var.gcp_region si prefieres regional
+  name        = "tallerautosdb2"
+  location_id = "nam5" 
   type        = "FIRESTORE_NATIVE"
   
   depends_on = [google_project_service.firestore]
@@ -112,14 +112,8 @@ resource "google_compute_instance" "admin_instance" {
 
 # Bucket de Cloud Storage para scripts
 resource "google_storage_bucket" "firestore_scripts_bucket" {
-  name     = "crud-autos-project-firestore-scripts"
-  location = var.gcp_region
-  project  = var.gcp_project_id
-}
-
-# Subir el script al bucket
-resource "google_storage_bucket_object" "init_script" {
-  name   = "init-datastore.py"
-  bucket = google_storage_bucket.firestore_scripts_bucket.name
-  source = "D:/Yo/Udem/Semestre 8/DevOps (enfasis)/CRUD-TallerAutos/terraform/scripts/init-datastore.py"
+  name          = "crud-autos-project-firestore-scripts"
+  location      = var.gcp_region
+  project       = var.gcp_project_id
+  force_destroy = true  # <-- Esta línea es crucial
 }
